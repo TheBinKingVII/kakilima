@@ -10,6 +10,27 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Core
+  get: ^4.6.6
+  supabase_flutter: ^2.8.0
+  get_it: ^8.0.0
+  dartz: ^0.10.1
+  equatable: ^2.0.5
+
+  # Location & Background (Android-first)
+  geolocator: ^12.0.0
+  workmanager: ^0.9.0
+  permission_handler: ^11.3.1
+
+  # Maps
+  google_maps_flutter: ^2.9.0
+
+  # UI
+  cached_network_image: ^3.3.1
+
+  # Env
+  flutter_dotenv: ^5.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -20,3 +41,4 @@ flutter:
   assets:
     - assets/google_icon.png
     - assets/vector_icon.png
+    - .env
