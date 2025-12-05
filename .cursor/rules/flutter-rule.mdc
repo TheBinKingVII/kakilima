@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+---
+Here are the official Kakilima project rules written as clear, strict sentences that any developer or AI must follow at all times:
+
+1. Every new feature must be placed inside `/lib/features/` and must contain exactly three folders: `data/`, `domain/`, and `presentation/`.  
+2. No Supabase query is ever allowed outside of a file located in `features/.../data/datasources/`.  
+3. All UI screens must extend `GetView<SomeController>` and must never call `Get.find()` inside the build method.  
+4. Every feature must have its own Binding class that registers its controller(s) and use cases using `Get.lazyPut()`.  
+5. All asynchronous operations must return `Either<Failure, T>` from the domain layer using the `dartz` package.  
+6. Vendor location must be updated to Supabase every 5 minutes (±30 seconds) using Workmanager, even when the app is killed.  
+7. Background location permission (`ACCESS_BACKGROUND_LOCATION`) and foreground service permission must be requested on Android immediately after a vendor logs in.  
+8. A vendor is automatically marked inactive if `last_seen_at` is older than 20 minutes; this logic is enforced by a Supabase trigger, not in the app.  
+9. Only one stall is allowed per vendor; attempting to create a second stall must be blocked.  
+10. The discover map must only show stalls where `is_active = true` and within 3 km of the user using PostGIS `st_dwithin`.  
+11. All images must be displayed using `CachedNetworkImage` with a placeholder and error widget.  
+12. No Hive, no offline caching, and no image upload features are allowed in v1.  
+13. No reviews, favorites, AI location suggestions, or analytics screens are permitted in v1.  
+14. All streams opened from Supabase must be canceled inside the controller’s `onClose()` method.  
+15. No `setState()`, `Bloc`, `Provider`, or `Riverpod` is ever allowed — only GetX with `.obs` is permitted.  
+16. All location requests must use `LocationAccuracy.high` and must respect Android 11+ background location rules.  
+17. VendorLocationService.start() must be called exactly once immediately after successful vendor login and never again.  
+18. Hard-coded search radius is 3 km; no user-configurable radius in v1.  
+19. Stall names can have an enhanced AI version, but the original name must always be stored separately.  
+20. Any deviation from these rules must be explicitly approved in writing by the lead developer before committing code.
+
+These 20 sentences are the law of the project. Follow them exactly, no exceptions.
