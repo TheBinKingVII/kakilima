@@ -41,4 +41,13 @@ class AuthUsecase
   }) async {
     return _authRepository.signUpWithEmail(email: email, password: password, role: UserRole.customer, fullName: fullName, phone: phone);
   }
+
+  Future<Either<Failure, AuthUserEntity?>> getCurrentUser() async {
+    return _authRepository.getCurrentUser();
+  }
+
+  Future<Either<Failure, void>> signOut() async {
+    return _authRepository.signOut();
+  }
+  
 }
