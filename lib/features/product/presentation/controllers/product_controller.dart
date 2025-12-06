@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../pages/rating_detail_page.dart';
+import '../widgets/share_bottom_sheet.dart';
 
 class ProductController extends GetxController {
+  // Dummy data untuk UI
   final merchantName = 'Siomay Hengki'.obs;
   final merchantAddress = 'Jl. Soekarno Hatta 15A'.obs;
   final merchantRating = 4.0.obs;
@@ -9,7 +11,7 @@ class ProductController extends GetxController {
   final merchantImage = 'https://via.placeholder.com/150'.obs;
   final bannerImage = 'https://via.placeholder.com/400x200'.obs;
 
-
+  // Dummy product list
   final products = <Map<String, dynamic>>[
     {
       'name': 'Siomay Ikan Komplit',
@@ -55,8 +57,11 @@ class ProductController extends GetxController {
   }
 
   void shareProduct() {
-    // Share functionality will be implemented later
-    Get.snackbar('Share', 'Share functionality');
+    Get.bottomSheet(
+      const ShareBottomSheet(),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
   }
 
   void editProduct() {
@@ -66,6 +71,6 @@ class ProductController extends GetxController {
 
   void viewRatingDetails() {
     // Navigate to rating details page
-    Get.to(() => const RatingDetailPage());
+    Get.toNamed('/rating-detail');
   }
 }
