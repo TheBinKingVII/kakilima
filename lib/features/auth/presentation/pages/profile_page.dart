@@ -81,7 +81,7 @@ class ProfilePage extends GetView<ProfileController> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(Icons.edit, size: 16, color: Colors.orange),
+                Icon(Icons.edit_square, size: 16, color: Colors.orange),
               ],
             ),
           ),
