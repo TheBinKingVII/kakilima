@@ -67,7 +67,9 @@ class _MainScreenState extends State<MainScreen> {
                       duration: const Duration(milliseconds: 200),
                       padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.orange : Colors.transparent,
+                        color: isSelected
+                            ? Color(0xFFF95929)
+                            : Colors.transparent,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -81,7 +83,7 @@ class _MainScreenState extends State<MainScreen> {
                       labels[index],
                       style: TextStyle(
                         fontSize: isSelected ? 12 : 11,
-                        color: isSelected ? Colors.orange : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -109,7 +111,9 @@ class _MainScreenState extends State<MainScreen> {
                       duration: const Duration(milliseconds: 200),
                       padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.orange : Colors.transparent,
+                        color: isSelected
+                            ? Color(0xFFF95929)
+                            : Colors.transparent,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -123,7 +127,7 @@ class _MainScreenState extends State<MainScreen> {
                       labels[navIndex],
                       style: TextStyle(
                         fontSize: isSelected ? 12 : 11,
-                        color: isSelected ? Colors.orange : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.normal,
