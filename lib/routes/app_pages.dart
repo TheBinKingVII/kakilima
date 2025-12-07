@@ -24,6 +24,16 @@ class AppPages {
       page: () => RegisterPage(),
       binding: AuthBinding(),
     ),
+    GetPage(
+      name: Routes.productPage,
+      page: () => ProductPage(),
+      // binding: ProductBinding(),
+    ),
+    GetPage(
+      name: Routes.ratingDetailPage,
+      page: () => RatingDetailPage(),
+      // binding: RatingDetailBinding(),
+    ),
   ];
 }
 
