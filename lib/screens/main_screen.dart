@@ -1,25 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kakilima/features/home/presentation/bindings/home_binding.dart';
 import 'package:kakilima/features/home/presentation/pages/home_page.dart';
 import 'package:kakilima/features/product/presentation/pages/product_page.dart';
 import 'package:kakilima/features/search/presentation/pages/seacrh_page.dart';
 import 'package:kakilima/features/auth/presentation/pages/profile_page.dart';
+import 'package:kakilima/features/auth/presentation/bindings/profile_binding.dart';
+import 'package:kakilima/features/auth/presentation/controllers/profile_controller.dart';
+import 'package:kakilima/features/home/presentation/controllers/home_controller.dart';
+import 'package:kakilima/screens/main_screen_controller.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends GetView<MainScreenController> {
   MainScreen({super.key});
 
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _optionWidgets = [
-    HomePage(),
-    SeacrhPage(),
-    ProductPage(),
-    ProfilePage(),
-  ];
+  List<Widget> get _optionWidgets {
+    // Initialize HomeBinding on first access
+    if (!Get.isRegistered<HomeController>()) {
+      HomeBinding().dependencies();
+    }
+    // Initialize ProfileBinding when ProfilePage is accessed
+    if (!Get.isRegistered<ProfileController>()) {
+      ProfileBinding().dependencies();
+    }
+    return [
+      const HomePage(),
+      SeacrhPage(),
+      ProductPage(),
+      const ProfilePage(),
+    ];
+  }
 
   final List<IconData> icons = [
     Icons.home_filled,
@@ -30,23 +39,26 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<String> labels = ["Beranda", "Pencarian", "Produk", "Profil"];
 
-  void _onTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: _optionWidgets.elementAt(_selectedIndex)),
+    return Obx(() {
+      // Show loading while checking for vendor stall
+      if (controller.isCheckingStall.value) {
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      }
+      
+      return Scaffold(
+        body: _optionWidgets.elementAt(controller.selectedIndex.value),
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
-
             topRight: Radius.circular(24),
           ),
         ),
@@ -55,10 +67,10 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             // Item kiri (Beranda dan Pencarian)
             ...List.generate(2, (index) {
-              final isSelected = _selectedIndex == index;
+              final isSelected = controller.selectedIndex.value == index;
               return GestureDetector(
                 onTap: () {
-                  _onTapped(index);
+                  controller.changeIndex(index);
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -94,10 +106,10 @@ class _MainScreenState extends State<MainScreen> {
             ...List.generate(2, (index) {
               final navIndex =
                   index + 2; // Index 2 dan 3 untuk Produk dan Profil
-              final isSelected = _selectedIndex == navIndex;
+              final isSelected = controller.selectedIndex.value == navIndex;
               return GestureDetector(
                 onTap: () {
-                  _onTapped(navIndex);
+                  controller.changeIndex(navIndex);
                 },
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -130,16 +142,26 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        shape: CircleBorder(),
-        onPressed: () {
-          // FAB untuk action khusus, tidak mengubah navigasi
-          // Tambahkan logic untuk play button di sini jika diperlukan
-        },
-        backgroundColor: Colors.green,
-        child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 32),
-      ),
+      floatingActionButton: controller.isVendor
+          ? Obx(() => FloatingActionButton(
+              shape: CircleBorder(),
+              onPressed: () {
+                controller.toggleLocationSharing();
+              },
+              backgroundColor: controller.isLocationSharingActive.value
+                  ? Colors.orange
+                  : Colors.green,
+              child: Icon(
+                controller.isLocationSharingActive.value
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ))
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
+      );
+    });
   }
 }

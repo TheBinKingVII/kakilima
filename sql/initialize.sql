@@ -446,6 +446,30 @@ CREATE POLICY "Vendors can delete own location history"
     );
 
 -- ============================================
+-- PROTOTYPING: AUTO-CONFIRM EMAIL FUNCTION
+-- This function bypasses email confirmation for prototyping
+-- TODO: Remove this before production
+-- ============================================
+
+CREATE OR REPLACE FUNCTION auto_confirm_email(user_email TEXT)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    UPDATE auth.users
+    SET email_confirmed_at = NOW(),
+        confirmed_at = NOW()
+    WHERE email = user_email
+    AND email_confirmed_at IS NULL;
+END;
+$$;
+
+-- Grant execute permission to authenticated users (for prototyping)
+GRANT EXECUTE ON FUNCTION auto_confirm_email(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION auto_confirm_email(TEXT) TO anon;
+
+-- ============================================
 -- INITIALIZATION COMPLETE
 -- ============================================
 

@@ -1,33 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kakilima/features/auth/presentation/controllers/auth_controllers.dart';
+import 'package:kakilima/routes/app_pages.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends GetView<AuthControllers> {
   const RegisterPage({Key? key}) : super(key: key);
-
-  @override
-  State<RegisterPage> createState() => _RegisterPageState();
-}
-
-class _RegisterPageState extends State<RegisterPage> {
-  bool _isPedagang = false;
-  bool _isPasswordVisible = false;
-  
-  // Country data
-  final List<Map<String, String>> countries = [
-    {'code': '+62', 'name': 'Indonesia', 'flag_top': '#CE1126', 'flag_bottom': 'white'},
-    {'code': '+1', 'name': 'United States', 'flag_top': '#002868', 'flag_bottom': 'white'},
-    {'code': '+44', 'name': 'United Kingdom', 'flag_top': '#012169', 'flag_bottom': 'white'},
-    {'code': '+81', 'name': 'Japan', 'flag_top': 'white', 'flag_bottom': 'white'},
-    {'code': '+86', 'name': 'China', 'flag_top': '#DE2910', 'flag_bottom': '#DE2910'},
-    {'code': '+60', 'name': 'Malaysia', 'flag_top': '#007A5E', 'flag_bottom': '#FFFFFF'},
-  ];
-  
-  late Map<String, String> selectedCountry;
-  
-  @override
-  void initState() {
-    super.initState();
-    selectedCountry = countries[0]; // Default to Indonesia
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +20,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 Center(
                   child: Column(
                     children: [
-                      // Logo
                       SizedBox(
                         width: 28,
                         height: 28,
@@ -88,7 +64,10 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: SizedBox(
                           height: 40,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Use offNamed to keep controller alive since both pages share AuthBinding
+                              Get.offNamed(Routes.authLogin);
+                            },
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               minimumSize: const Size.fromHeight(40),
@@ -136,13 +115,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     Transform.scale(
                       scale: 0.8,
-                      child: Switch(
-                        value: _isPedagang,
-                        onChanged: (value) {
-                          setState(() {
-                            _isPedagang = value;
-                          });
-                        },
+                      child: Obx(
+                        () => Switch(
+                          value: controller.isPedagang.value,
+                          onChanged: controller.togglePedagang,
+                        ),
                       ),
                     ),
                   ],
@@ -164,6 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 4),
                           TextField(
+                            controller: controller.firstNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(6),
@@ -192,6 +170,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 4),
                           TextField(
+                            controller: controller.lastNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(6),
@@ -218,6 +197,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 const SizedBox(height: 4),
                 TextField(
+                  controller: controller.emailController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(6),
@@ -238,65 +218,71 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 8.0,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 10.0, right: 6.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          PopupMenuButton(
-                            position: PopupMenuPosition.under,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildFlagCircle(
-                                  selectedCountry['flag_top'] ?? '#CE1126',
-                                  selectedCountry['flag_bottom'] ?? 'white',
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(Icons.arrow_drop_down, size: 18, color: Colors.grey),
-                              ],
-                            ),
-                            itemBuilder: (context) => countries.map((country) {
-                              return PopupMenuItem(
-                                onTap: () {
-                                  setState(() {
-                                    selectedCountry = country;
-                                  });
-                                },
+                Obx(
+                  () {
+                    final country = controller.selectedCountry;
+                    return TextField(
+                      controller: controller.phoneController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 10.0,
+                          vertical: 8.0,
+                        ),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 10.0, right: 6.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              PopupMenuButton<Map<String, String>>(
+                                position: PopupMenuPosition.under,
+                                onSelected: controller.pickCountry,
+                                itemBuilder: (context) => controller.countries.map((country) {
+                                  return PopupMenuItem<Map<String, String>>(
+                                    value: country,
+                                    child: Row(
+                                      children: [
+                                        _buildFlagCircle(
+                                          country['flag_top'] ?? '#CE1126',
+                                          country['flag_bottom'] ?? 'white',
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text('${country['name']} (${country['code']})'),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                                 child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     _buildFlagCircle(
                                       country['flag_top'] ?? '#CE1126',
                                       country['flag_bottom'] ?? 'white',
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text('${country['name']} (${country['code']})'),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.arrow_drop_down, size: 18, color: Colors.grey),
                                   ],
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 1,
+                                height: 18,
+                                color: Colors.grey.shade300,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                country['code'] ?? '+62',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 6),
-                          Container(
-                            width: 1,
-                            height: 18,
-                            color: Colors.grey.shade300,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('(62)', style: TextStyle(fontSize: 12)),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 12),
                 const Text(
@@ -308,43 +294,56 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                TextField(
-                  obscureText: !_isPasswordVisible,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 8.0,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                Obx(
+                  () => TextField(
+                    controller: controller.passwordController,
+                    obscureText: !controller.isPasswordVisible.value,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                        vertical: 8.0,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: controller.togglePasswordVisibility,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5722),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                // Error Message
+                Text(controller.error ?? '', style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                Obx(
+                  () => ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF5722),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 18.0),
+                      minimumSize: const Size.fromHeight(52),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    minimumSize: const Size.fromHeight(52),
+                    onPressed: controller.isLoading ? null : controller.registerWithEmail,
+                    child: controller.isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Daftar', style: TextStyle(fontSize: 16)),
                   ),
-                  onPressed: () {},
-                  child: const Text('Daftar', style: TextStyle(fontSize: 16)),
                 ),
                 const SizedBox(height: 40),
               ],
@@ -354,19 +353,17 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
-  
-  Widget _buildFlagCircle(String topColor, String bottomColor) {
+
+  static Widget _buildFlagCircle(String topColor, String bottomColor) {
     Color parseColor(String colorStr) {
       if (colorStr == 'white') return Colors.white;
-      // Parse hex color
-      String hexColor = colorStr.replaceFirst('#', '');
+      final hexColor = colorStr.replaceFirst('#', '');
       return Color(int.parse('FF$hexColor', radix: 16));
     }
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Background circle with top color
         Container(
           width: 28,
           height: 28,
@@ -375,7 +372,6 @@ class _RegisterPageState extends State<RegisterPage> {
             color: parseColor(topColor),
           ),
         ),
-        // Bottom half with bottom color
         Positioned(
           bottom: 0,
           child: Container(
