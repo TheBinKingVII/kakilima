@@ -9,28 +9,49 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task != taskId) return false;
 
-    LocationPermission perm = await Geolocator.checkPermission();
-    if (perm == LocationPermission.denied ||
-        perm == LocationPermission.deniedForever) return false;
+    try {
+      // Check location permissions
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return false;
+      }
 
-    Position pos = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-      timeLimit: const Duration(seconds: 15),
-    );
+      // Get current position with high accuracy
+      Position pos = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
 
-    final userId = Supabase.instance.client.auth.currentUser?.id;
-    if (userId == null) return false;
+      // Check if user is authenticated
+      final userId = Supabase.instance.client.auth.currentUser?.id;
+      if (userId == null) return false;
 
-    await Supabase.instance.client
-        .from('stalls')
-        .update({
-          'location': 'POINT(${pos.longitude} ${pos.latitude})',
-          'last_seen_at': DateTime.now().toIso8601String(),
-          'is_active': true,
-        })
-        .eq('vendor_id', userId);
+      // Update current_location using PostGIS POINT format
+      // The trigger will automatically log to vendor_location_history if moved >10 meters
+      final response = await Supabase.instance.client
+          .from('stalls')
+          .update({
+            'current_location': 'POINT(${pos.longitude} ${pos.latitude})',
+            'last_seen_at': DateTime.now().toIso8601String(),
+            'is_active': true,
+          })
+          .eq('vendor_id', userId)
+          .select()
+          .maybeSingle();
 
-    return true;
+      // Check if vendor has a stall (response will be null if no stall exists)
+      if (response == null) {
+        // Vendor doesn't have a stall yet, silently fail
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      // Handle network errors and other exceptions
+      // Return false to indicate task failure (Workmanager will retry)
+      return false;
+    }
   });
 }
 
@@ -40,7 +61,7 @@ class VendorLocationService {
     await Workmanager().registerPeriodicTask(
       taskId,
       taskId,
-      frequency: const Duration(minutes: 5),
+      frequency: const Duration(minutes: 3),
       constraints: Constraints(networkType: NetworkType.connected),
     );
   }

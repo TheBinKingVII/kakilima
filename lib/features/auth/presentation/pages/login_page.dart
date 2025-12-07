@@ -85,7 +85,10 @@ class LoginPage extends GetView<AuthControllers> {
                         child: SizedBox(
                           height: 40,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Use offNamed to keep controller alive since both pages share AuthBinding
+                              Get.offNamed(Routes.authRegister);
+                            },
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               minimumSize: const Size.fromHeight(40),
@@ -208,23 +211,29 @@ class LoginPage extends GetView<AuthControllers> {
                     ),
                     onPressed: controller.isLoading
                         ? null
-                        : () {
+                        : () async {
                             final email = controller.emailController.text.trim();
                             final password = controller.passwordController.text;
                             if (controller.isPedagang.value) {
-                              controller.vendorSignInWithEmail(
+                              await controller.vendorSignInWithEmail(
                                 email: email,
                                 password: password,
                               );
-                              // move to home page
-                              Get.offAllNamed(Routes.main);
+                              // Only move to home page if no error (successful login)
+                              if (controller.error == null || controller.error!.isEmpty) {
+                                // Small delay to ensure login state is fully updated
+                                await Future.delayed(const Duration(milliseconds: 100));
+                                Get.offAllNamed(Routes.main);
+                              }
                             } else {
-                              controller.customerSignInWithEmail(
+                              await controller.customerSignInWithEmail(
                                 email: email,
                                 password: password,
                               );
-                              // move to home page
-                              Get.offAllNamed(Routes.main);
+                              // Only move to home page if no error (successful login)
+                              if (controller.error == null || controller.error!.isEmpty) {
+                                Get.offAllNamed(Routes.main);
+                              }
                             }
                           },
                     child: controller.isLoading
