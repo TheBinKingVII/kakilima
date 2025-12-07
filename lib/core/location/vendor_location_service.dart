@@ -46,6 +46,16 @@ void callbackDispatcher() {
         return false;
       }
 
+      final historyResponse = await Supabase.instance.client
+          .from('vendor_location_history')
+          .insert({
+            'stall_id': response['id'],
+            'location': 'POINT(${pos.longitude} ${pos.latitude})',
+          });
+      if (historyResponse.error != null) {
+        return false;
+      }
+
       return true;
     } catch (e) {
       // Handle network errors and other exceptions

@@ -3,6 +3,7 @@ import 'package:kakilima/features/auth/domain/entities/auth_user_entity.dart';
 import 'package:kakilima/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:kakilima/core/user_role.dart';
 import 'package:kakilima/core/location/vendor_location_service.dart';
+import 'package:kakilima/core/storage/location_sharing_storage.dart';
 
 class ProfileController extends GetxController {
   final AuthUsecase _authUsecase;
@@ -43,11 +44,9 @@ class ProfileController extends GetxController {
   }
 
   Future<void> _checkLocationSharingStatus() async {
-    // Check if workmanager task is registered
-    // Note: Workmanager doesn't have a direct way to check if task is active
-    // We'll track it manually or check via a flag
-    // For now, we'll assume it's false and update when start/stop is called
-    isLocationSharingActive.value = false;
+    // Load the persisted location sharing status
+    final savedStatus = await LocationSharingStorage.getStatus();
+    isLocationSharingActive.value = savedStatus;
   }
 
   bool get isLoggedIn => currentUser.value != null;
@@ -62,6 +61,7 @@ class ProfileController extends GetxController {
     if (isLocationSharingActive.value) {
       await VendorLocationService.stop();
       isLocationSharingActive.value = false;
+      await LocationSharingStorage.setStatus(false);
     }
     
     final result = await _authUsecase.signOut();
@@ -81,9 +81,11 @@ class ProfileController extends GetxController {
     if (isLocationSharingActive.value) {
       await VendorLocationService.stop();
       isLocationSharingActive.value = false;
+      await LocationSharingStorage.setStatus(false);
     } else {
       await VendorLocationService.start();
       isLocationSharingActive.value = true;
+      await LocationSharingStorage.setStatus(true);
     }
   }
 }
