@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kakilima/features/auth/presentation/controllers/auth_controllers.dart';
+import 'package:kakilima/routes/app_pages.dart';
 
 class RegisterPage extends GetView<AuthControllers> {
   const RegisterPage({Key? key}) : super(key: key);
@@ -63,7 +64,10 @@ class RegisterPage extends GetView<AuthControllers> {
                         child: SizedBox(
                           height: 40,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Use offNamed to keep controller alive since both pages share AuthBinding
+                              Get.offNamed(Routes.authLogin);
+                            },
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               minimumSize: const Size.fromHeight(40),
