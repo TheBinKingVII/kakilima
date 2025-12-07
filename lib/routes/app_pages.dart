@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:kakilima/features/auth/presentation/bindings/auth_binding.dart';
 import 'package:kakilima/features/auth/presentation/pages/login_page.dart';
 import 'package:kakilima/features/auth/presentation/pages/register_page.dart';
 import 'package:kakilima/screens/main_screen.dart';
@@ -14,10 +15,12 @@ class AppPages {
     GetPage(
       name: Routes.authLogin,
       page: () => LoginPage(),
+      binding: AuthBinding(),
     ),
     GetPage(
       name: Routes.authRegister,
       page: () => RegisterPage(),
+      binding: AuthBinding(),
     ),
   ];
 }

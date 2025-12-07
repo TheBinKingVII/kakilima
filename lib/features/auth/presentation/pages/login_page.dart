@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kakilima/features/auth/presentation/controllers/auth_controllers.dart';
+import 'package:kakilima/routes/app_pages.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends GetView<AuthControllers> {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -102,7 +105,12 @@ class LoginPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Sebagai Pedagang'),
-                    Switch(value: false, onChanged: (v) {}),
+                    Obx(
+                      () => Switch(
+                        value: controller.isPedagang.value,
+                        onChanged: controller.togglePedagang,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -116,6 +124,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 TextField(
+                  controller: controller.emailController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(6),
@@ -136,17 +145,27 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(6),
+                Obx(
+                  () => TextField(
+                    controller: controller.passwordController,
+                    obscureText: !controller.isPasswordVisible.value,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10.0,
+                        vertical: 8.0,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: controller.togglePasswordVisibility,
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 8.0,
-                    ),
-                    suffixIcon: const Icon(Icons.visibility_off),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -165,18 +184,60 @@ class LoginPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF5722),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                Obx(
+                  () => controller.error != null && controller.error!.isNotEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Text(
+                            controller.error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                Obx(
+                  () => ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF5722),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 18.0),
+                      minimumSize: const Size.fromHeight(52),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 18.0),
-                    minimumSize: const Size.fromHeight(52),
+                    onPressed: controller.isLoading
+                        ? null
+                        : () {
+                            final email = controller.emailController.text.trim();
+                            final password = controller.passwordController.text;
+                            if (controller.isPedagang.value) {
+                              controller.vendorSignInWithEmail(
+                                email: email,
+                                password: password,
+                              );
+                              // move to home page
+                              Get.offAllNamed(Routes.main);
+                            } else {
+                              controller.customerSignInWithEmail(
+                                email: email,
+                                password: password,
+                              );
+                              // move to home page
+                              Get.offAllNamed(Routes.main);
+                            }
+                          },
+                    child: controller.isLoading
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Masuk', style: TextStyle(fontSize: 16)),
                   ),
-                  onPressed: () {},
-                  child: const Text('Masuk', style: TextStyle(fontSize: 16)),
                 ),
                 const SizedBox(height: 32),
                 const Center(child: Text('Atau masuk dengan')),
