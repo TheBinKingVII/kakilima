@@ -4,6 +4,7 @@ import 'package:kakilima/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:kakilima/features/stall/domain/usecases/stall_usecase.dart';
 import 'package:kakilima/core/user_role.dart';
 import 'package:kakilima/core/location/vendor_location_service.dart';
+import 'package:kakilima/core/storage/location_sharing_storage.dart';
 import 'package:kakilima/routes/app_pages.dart';
 
 class MainScreenController extends GetxController {
@@ -63,13 +64,9 @@ class MainScreenController extends GetxController {
   }
 
   Future<void> _checkLocationSharingStatus() async {
-    // Note: Workmanager doesn't provide a direct way to check if a task is active
-    // We default to false on app start. The state will be updated when user toggles
-    // the location sharing via the FAB button.
-    // The actual Workmanager task may still be running in the background even if
-    // the app was killed, but we can't reliably detect that without additional
-    // persistent storage (which we avoid per project rules).
-    isLocationSharingActive.value = false;
+    // Load the persisted location sharing status
+    final savedStatus = await LocationSharingStorage.getStatus();
+    isLocationSharingActive.value = savedStatus;
   }
 
   bool get isVendor => currentUser.value?.role == UserRole.vendor;
@@ -89,9 +86,11 @@ class MainScreenController extends GetxController {
       if (isLocationSharingActive.value) {
         await VendorLocationService.stop();
         isLocationSharingActive.value = false;
+        await LocationSharingStorage.setStatus(false);
       } else {
         await VendorLocationService.start();
         isLocationSharingActive.value = true;
+        await LocationSharingStorage.setStatus(true);
       }
     } catch (e) {
       // Handle any errors during start/stop
