@@ -22,10 +22,10 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   final List<IconData> icons = [
-    Icons.home_outlined,
-    Icons.search_outlined,
-    Icons.store_outlined,
-    Icons.person_outline_rounded,
+    Icons.home_filled,
+    Icons.search,
+    Icons.store_mall_directory_outlined,
+    Icons.person_3_rounded,
   ];
 
   final List<String> labels = ["Beranda", "Pencarian", "Produk", "Profil"];
@@ -66,14 +66,11 @@ class _MainScreenState extends State<MainScreen> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.orange : Colors.transparent,
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle),
                       child: Icon(
                         icons[index],
                         size: 26,
-                        color: isSelected ? Colors.white : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -81,7 +78,7 @@ class _MainScreenState extends State<MainScreen> {
                       labels[index],
                       style: TextStyle(
                         fontSize: isSelected ? 12 : 11,
-                        color: isSelected ? Colors.orange : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.normal,
@@ -108,14 +105,11 @@ class _MainScreenState extends State<MainScreen> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.orange : Colors.transparent,
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle),
                       child: Icon(
                         icons[navIndex],
                         size: 26,
-                        color: isSelected ? Colors.white : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -123,7 +117,7 @@ class _MainScreenState extends State<MainScreen> {
                       labels[navIndex],
                       style: TextStyle(
                         fontSize: isSelected ? 12 : 11,
-                        color: isSelected ? Colors.orange : Colors.grey,
+                        color: isSelected ? Color(0xFFF95929) : Colors.grey,
                         fontWeight: isSelected
                             ? FontWeight.w600
                             : FontWeight.normal,

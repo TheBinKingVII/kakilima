@@ -41,4 +41,8 @@ flutter:
   assets:
     - assets/google_icon.png
     - assets/vector_icon.png
+    - assets/email_icon.png
+    - assets/instagram_icon.png
+    - assets/massage_icon.png
+    - assets/whatsapp_icon.png
     - .env
