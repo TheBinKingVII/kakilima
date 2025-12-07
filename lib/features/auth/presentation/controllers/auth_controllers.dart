@@ -16,7 +16,8 @@ class AuthControllers extends GetxController {
 
   TextEditingController get firstNameController {
     try {
-      if (_firstNameController == null || !_isControllerValid(_firstNameController)) {
+      if (_firstNameController == null ||
+          !_isControllerValid(_firstNameController)) {
         _firstNameController?.dispose();
         _firstNameController = TextEditingController();
       }
@@ -31,7 +32,8 @@ class AuthControllers extends GetxController {
 
   TextEditingController get lastNameController {
     try {
-      if (_lastNameController == null || !_isControllerValid(_lastNameController)) {
+      if (_lastNameController == null ||
+          !_isControllerValid(_lastNameController)) {
         _lastNameController?.dispose();
         _lastNameController = TextEditingController();
       }
@@ -76,7 +78,8 @@ class AuthControllers extends GetxController {
 
   TextEditingController get passwordController {
     try {
-      if (_passwordController == null || !_isControllerValid(_passwordController)) {
+      if (_passwordController == null ||
+          !_isControllerValid(_passwordController)) {
         _passwordController?.dispose();
         _passwordController = TextEditingController();
       }
@@ -110,12 +113,42 @@ class AuthControllers extends GetxController {
   final isPasswordVisible = false.obs;
 
   final List<Map<String, String>> countries = const [
-    {'code': '+62', 'name': 'Indonesia', 'flag_top': '#CE1126', 'flag_bottom': 'white'},
-    {'code': '+1', 'name': 'United States', 'flag_top': '#002868', 'flag_bottom': 'white'},
-    {'code': '+44', 'name': 'United Kingdom', 'flag_top': '#012169', 'flag_bottom': 'white'},
-    {'code': '+81', 'name': 'Japan', 'flag_top': 'white', 'flag_bottom': 'white'},
-    {'code': '+86', 'name': 'China', 'flag_top': '#DE2910', 'flag_bottom': '#DE2910'},
-    {'code': '+60', 'name': 'Malaysia', 'flag_top': '#007A5E', 'flag_bottom': '#FFFFFF'},
+    {
+      'code': '+62',
+      'name': 'Indonesia',
+      'flag_top': '#CE1126',
+      'flag_bottom': 'white',
+    },
+    {
+      'code': '+1',
+      'name': 'United States',
+      'flag_top': '#002868',
+      'flag_bottom': 'white',
+    },
+    {
+      'code': '+44',
+      'name': 'United Kingdom',
+      'flag_top': '#012169',
+      'flag_bottom': 'white',
+    },
+    {
+      'code': '+81',
+      'name': 'Japan',
+      'flag_top': 'white',
+      'flag_bottom': 'white',
+    },
+    {
+      'code': '+86',
+      'name': 'China',
+      'flag_top': '#DE2910',
+      'flag_bottom': '#DE2910',
+    },
+    {
+      'code': '+60',
+      'name': 'Malaysia',
+      'flag_top': '#007A5E',
+      'flag_bottom': '#FFFFFF',
+    },
   ];
 
   final RxMap<String, String> selectedCountry = <String, String>{}.obs;
@@ -165,7 +198,7 @@ class AuthControllers extends GetxController {
     _emailController?.dispose();
     _phoneController?.dispose();
     _passwordController?.dispose();
-    
+
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _emailController = TextEditingController();
@@ -177,7 +210,7 @@ class AuthControllers extends GetxController {
     final result = await _authUsecase.getCurrentUser();
     result.fold(
       (failure) => throw failure,
-      (user) => _currentUser.value = user!
+      (user) => _currentUser.value = user,
     );
   }
 
@@ -187,7 +220,10 @@ class AuthControllers extends GetxController {
   }) async {
     _isLoading.value = true;
     _error.value = null;
-    final result = await _authUsecase.vendorSignInWithEmail(email: email, password: password);
+    final result = await _authUsecase.vendorSignInWithEmail(
+      email: email,
+      password: password,
+    );
     result.fold(
       (failure) {
         _error.value = failure.message;
@@ -216,7 +252,10 @@ class AuthControllers extends GetxController {
   }) async {
     _isLoading.value = true;
     _error.value = null;
-    final result = await _authUsecase.customerSignInWithEmail(email: email, password: password);
+    final result = await _authUsecase.customerSignInWithEmail(
+      email: email,
+      password: password,
+    );
     result.fold(
       (failure) {
         _error.value = failure.message;
@@ -240,8 +279,11 @@ class AuthControllers extends GetxController {
   }
 
   Future<void> registerWithEmail() async {
-    final fullName = '${firstNameController.text.trim()} ${lastNameController.text.trim()}'.trim();
-    final phone = '${selectedCountry['code'] ?? ''}${phoneController.text.trim()}';
+    final fullName =
+        '${firstNameController.text.trim()} ${lastNameController.text.trim()}'
+            .trim();
+    final phone =
+        '${selectedCountry['code'] ?? ''}${phoneController.text.trim()}';
     if (isPedagang.value) {
       await vendorSignUpWithEmail(
         email: emailController.text.trim(),
@@ -279,8 +321,9 @@ class AuthControllers extends GetxController {
 
   void togglePasswordVisibility() => isPasswordVisible.toggle();
 
-  void pickCountry(Map<String, String> country) => selectedCountry.assignAll(country);
-  
+  void pickCountry(Map<String, String> country) =>
+      selectedCountry.assignAll(country);
+
   void _clearCredentials() {
     try {
       // Use getters to ensure controllers are valid before clearing
@@ -290,14 +333,14 @@ class AuthControllers extends GetxController {
       final firstName = firstNameController;
       final lastName = lastNameController;
       final phone = phoneController;
-      
+
       // Clear only if controllers are valid
       if (_isControllerValid(email)) email.clear();
       if (_isControllerValid(password)) password.clear();
       if (_isControllerValid(firstName)) firstName.clear();
       if (_isControllerValid(lastName)) lastName.clear();
       if (_isControllerValid(phone)) phone.clear();
-      
+
       isPedagang.value = false;
       isPasswordVisible.value = false;
       selectedCountry.assignAll(countries.first);
@@ -315,7 +358,12 @@ class AuthControllers extends GetxController {
   }) async {
     _isLoading.value = true;
     _error.value = null;
-    final result = await _authUsecase.vendorSignUpWithEmail(email: email, password: password, fullName: fullName, phone: phone);
+    final result = await _authUsecase.vendorSignUpWithEmail(
+      email: email,
+      password: password,
+      fullName: fullName,
+      phone: phone,
+    );
     result.fold(
       (failure) {
         _error.value = failure.message;
@@ -338,7 +386,12 @@ class AuthControllers extends GetxController {
   }) async {
     _isLoading.value = true;
     _error.value = null;
-    final result = await _authUsecase.customerSignUpWithEmail(email: email, password: password, fullName: fullName, phone: phone);
+    final result = await _authUsecase.customerSignUpWithEmail(
+      email: email,
+      password: password,
+      fullName: fullName,
+      phone: phone,
+    );
     result.fold(
       (failure) {
         _error.value = failure.message;
@@ -346,9 +399,9 @@ class AuthControllers extends GetxController {
         return;
       },
       (user) {
-      _currentUser.value = user;
-      _isLoading.value = false;
-      return;
+        _currentUser.value = user;
+        _isLoading.value = false;
+        return;
       },
     );
   }
@@ -380,6 +433,4 @@ class AuthControllers extends GetxController {
     // Only dispose when controller is permanently removed (handled by GetX)
     super.onClose();
   }
-
-  
 }
