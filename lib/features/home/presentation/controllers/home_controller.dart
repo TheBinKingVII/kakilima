@@ -4,20 +4,25 @@ import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:kakilima/features/auth/domain/usecases/auth_usecase.dart';
+import 'package:kakilima/features/stall/domain/usecases/stall_usecase.dart';
+import 'package:kakilima/features/stall/domain/entities/stall_entity.dart';
 import 'package:kakilima/core/user_role.dart';
 
 class HomeController extends GetxController {
   final AuthUsecase _authUsecase;
+  final StallUsecase _stallUsecase;
   final MapController mapController = MapController();
   final Rx<Position?> currentPosition = Rx<Position?>(null);
   final RxBool isLoadingLocation = true.obs;
   final RxBool isVendor = false.obs;
   final RxBool isMapReady = false.obs;
+  final RxList<StallEntity> vendors = <StallEntity>[].obs;
+  final RxBool isLoadingVendors = false.obs;
   
   // Default location for customers (Jakarta center)
   static const LatLng defaultCustomerLocation = LatLng(-6.2088, 106.8456);
 
-  HomeController(this._authUsecase);
+  HomeController(this._authUsecase, this._stallUsecase);
 
   @override
   void onInit() {
@@ -35,13 +40,13 @@ class HomeController extends GetxController {
   void onMapReady() {
     isMapReady.value = true;
     // Move map if we have a location ready
-    if (isVendor.value && currentPosition.value != null) {
+    if (currentPosition.value != null) {
       _moveToLocation(
         LatLng(
           currentPosition.value!.latitude,
           currentPosition.value!.longitude,
         ),
-        15.0,
+        isVendor.value ? 15.0 : 12.0,
       );
     }
   }
@@ -77,6 +82,11 @@ class HomeController extends GetxController {
               // Was vendor, now customer
               isVendor.value = false;
               _setDefaultCustomerLocation();
+            } else {
+              // Customer - request location
+              if (currentPosition.value == null) {
+                _getCurrentLocation();
+              }
             }
           }
         },
@@ -144,9 +154,9 @@ class HomeController extends GetxController {
             isVendor.value = true;
             _getCurrentLocation();
           } else {
-            // Customer or no user
+            // Customer or no user - request location for customers too
             isVendor.value = false;
-            _setDefaultCustomerLocation();
+            _getCurrentLocation();
           }
         },
       );
@@ -161,6 +171,8 @@ class HomeController extends GetxController {
     currentPosition.value = null;
     // Don't move map here - let initialCenter handle it
     isLoadingLocation.value = false;
+    // Still fetch vendors even without location
+    _fetchAllVendors();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -203,44 +215,105 @@ class HomeController extends GetxController {
       // Move camera to current location (will wait for map to be ready)
       _moveToLocation(
         LatLng(position.latitude, position.longitude),
-        15.0,
+        isVendor.value ? 15.0 : 12.0,
       );
+      
+      // Fetch vendors after getting location
+      _fetchAllVendors();
     } catch (e) {
       Get.snackbar('Error', 'Failed to get location: $e');
       _setDefaultCustomerLocation();
+      // Still fetch vendors even if location failed
+      _fetchAllVendors();
     } finally {
       isLoadingLocation.value = false;
     }
   }
 
   Future<void> recenterToUserLocation() async {
-    if (isVendor.value) {
-      // For vendors, recenter to actual location
-      if (currentPosition.value != null) {
-        _moveToLocation(
-          LatLng(
-            currentPosition.value!.latitude,
-            currentPosition.value!.longitude,
-          ),
-          15.0,
-        );
-      } else {
-        await _getCurrentLocation();
-      }
+    // For both vendors and customers, recenter to actual location if available
+    if (currentPosition.value != null) {
+      _moveToLocation(
+        LatLng(
+          currentPosition.value!.latitude,
+          currentPosition.value!.longitude,
+        ),
+        isVendor.value ? 15.0 : 12.0,
+      );
     } else {
-      // For customers, recenter to default location
-      _moveToLocation(defaultCustomerLocation, 12.0);
+      // No location yet, try to get it
+      await _getCurrentLocation();
     }
   }
 
+  Future<void> refreshVendorLocations() async {
+    await _fetchAllVendors();
+  }
+
   LatLng get mapCenter {
-    if (isVendor.value && currentPosition.value != null) {
+    if (currentPosition.value != null) {
       return LatLng(
         currentPosition.value!.latitude,
         currentPosition.value!.longitude,
       );
     }
     return defaultCustomerLocation;
+  }
+
+  Future<void> _fetchAllVendors() async {
+    try {
+      isLoadingVendors.value = true;
+      
+      final result = await _stallUsecase.getAllActiveStalls(
+        latitude: currentPosition.value?.latitude,
+        longitude: currentPosition.value?.longitude,
+      );
+      
+      result.fold(
+        (failure) {
+          Get.snackbar('Error', 'Failed to fetch vendors: ${failure.message}');
+          vendors.clear();
+        },
+        (stalls) {
+          vendors.value = stalls;
+        },
+      );
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to fetch vendors: $e');
+      vendors.clear();
+      print('Failed to fetch vendors: $e');
+    } finally {
+      isLoadingVendors.value = false;
+    }
+  }
+
+  LatLng? parsePostGisPoint(String pointString) {
+    try {
+      // Extract coordinates from POINT format
+      final match = RegExp(r'POINT\(([^)]+)\)').firstMatch(pointString);
+      if (match != null) {
+        final coords = match.group(1)!.trim().split(RegExp(r'\s+'));
+        if (coords.length >= 2) {
+          return LatLng(
+            double.parse(coords[1]), // latitude
+            double.parse(coords[0]), // longitude
+          );
+        }
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void onVendorMarkerTap(StallEntity stall) {
+    final storeName = stall.nameEnhanced ?? stall.name;
+    Get.snackbar(
+      'Store',
+      storeName,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 2),
+    );
   }
 
   @override

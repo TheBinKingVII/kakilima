@@ -97,6 +97,7 @@ class MainScreenController extends GetxController {
       // Keep the state as it was before the toggle attempt
       // In a production app, you might want to show an error message to the user
       print('Error: $e');
+      Get.snackbar('Error', 'Failed to toggle location sharing: $e');
     }
   }
 
