@@ -42,8 +42,34 @@ class HomePage extends GetView<HomeController> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.kakilima',
               ),
-              // Only show location marker for vendors
-              if (isVendor && position != null)
+              // Show vendor markers
+              if (controller.vendors.isNotEmpty)
+                MarkerLayer(
+                  markers: controller.vendors
+                      .where((stall) => stall.currentLocation != null)
+                      .map((stall) {
+                    final latLng = controller.parsePostGisPoint(stall.currentLocation!);
+                    if (latLng == null) return null;
+                    
+                    return Marker(
+                      point: latLng,
+                      width: 40,
+                      height: 40,
+                      child: GestureDetector(
+                        onTap: () => controller.onVendorMarkerTap(stall),
+                        child: const Icon(
+                          Icons.store,
+                          color: Colors.orange,
+                          size: 40,
+                        ),
+                      ),
+                    );
+                  })
+                      .whereType<Marker>()
+                      .toList(),
+                ),
+              // Show customer/vendor location marker when location is available
+              if (position != null)
                 MarkerLayer(
                   markers: [
                     Marker(
@@ -66,6 +92,25 @@ class HomePage extends GetView<HomeController> {
             right: 16,
             child: Column(
               children: [
+                // Refresh vendor locations button
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: controller.refreshVendorLocations,
+                  ),
+                ),
+                const SizedBox(height: 8),
                 // Compass button
                 Container(
                   decoration: BoxDecoration(
@@ -103,7 +148,7 @@ class HomePage extends GetView<HomeController> {
                   child: IconButton(
                     icon: Icon(
                       Icons.my_location,
-                      color: isVendor ? Colors.red : Colors.grey,
+                      color: position != null ? Colors.red : Colors.grey,
                     ),
                     onPressed: controller.recenterToUserLocation,
                   ),

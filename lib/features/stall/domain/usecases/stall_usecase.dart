@@ -31,5 +31,15 @@ class StallUsecase {
       latitude: latitude,
     );
   }
+
+  Future<Either<Failure, List<StallEntity>>> getAllActiveStalls({
+    double? latitude,
+    double? longitude,
+  }) async {
+    return await _stallRepository.getAllActiveStalls(
+      latitude: latitude,
+      longitude: longitude,
+    );
+  }
 }
 

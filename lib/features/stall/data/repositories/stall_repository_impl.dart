@@ -44,5 +44,21 @@ class StallRepositoryImpl implements StallRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<StallEntity>>> getAllActiveStalls({
+    double? latitude,
+    double? longitude,
+  }) async {
+    try {
+      final stalls = await _remoteDatasource.getAllActiveStalls(
+        latitude: latitude,
+        longitude: longitude,
+      );
+      return Right(stalls);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }
 

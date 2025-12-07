@@ -13,5 +13,9 @@ abstract class StallRepository {
     required double longitude,
     required double latitude,
   });
+  Future<Either<Failure, List<StallEntity>>> getAllActiveStalls({
+    double? latitude,
+    double? longitude,
+  });
 }
 

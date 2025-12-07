@@ -4,6 +4,10 @@ import 'package:kakilima/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:kakilima/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:kakilima/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:kakilima/features/auth/domain/repositories/auth_repository.dart';
+import 'package:kakilima/features/stall/domain/usecases/stall_usecase.dart';
+import 'package:kakilima/features/stall/data/datasources/stall_remote_datasource.dart';
+import 'package:kakilima/features/stall/data/repositories/stall_repository_impl.dart';
+import 'package:kakilima/features/stall/domain/repositories/stall_repository.dart';
 
 class HomeBinding extends Bindings {
   @override
@@ -14,7 +18,18 @@ class HomeBinding extends Bindings {
       Get.lazyPut<AuthRepository>(() => AuthRepositoryImpl(Get.find()));
       Get.lazyPut<AuthUsecase>(() => AuthUsecase(Get.find()));
     }
-    Get.lazyPut<HomeController>(() => HomeController(Get.find<AuthUsecase>()));
+    
+    // Ensure StallUsecase is registered (reuse if exists, otherwise create)
+    if (!Get.isRegistered<StallUsecase>()) {
+      Get.lazyPut<StallRemoteDatasource>(() => StallRemoteDatasource());
+      Get.lazyPut<StallRepository>(() => StallRepositoryImpl(Get.find()));
+      Get.lazyPut<StallUsecase>(() => StallUsecase(Get.find()));
+    }
+    
+    Get.lazyPut<HomeController>(() => HomeController(
+      Get.find<AuthUsecase>(),
+      Get.find<StallUsecase>(),
+    ));
   }
 }
 
